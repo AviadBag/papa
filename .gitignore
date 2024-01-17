@@ -76,3 +76,4 @@ fabric.properties
 
 # Cmake staff
 cmake-build-debug/
+build/

@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 
-#define N 6
-#define K 6
+#define N 11
+#define K 11
 
 typedef int bool;
 #define true 1
