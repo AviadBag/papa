@@ -5,7 +5,6 @@
 
 typedef struct s_tree_node
 {
-	int digit;
 	bool is_leaf;
 	union {
 		int level; // Valid if leaf.
@@ -13,9 +12,11 @@ typedef struct s_tree_node
 	};
 } tree_node;
 
-tree_node tree;
+tree_node found_tree;
 
 void initialize_found_tree();
-void add_permutation(int* perm, int level);
+bool add_permutation(int* perm, int level); // Returns false if the perm already existed.
+void print_found_tree();
+void iterate_permutations(void (* callback)(int* perm, int level)); // Calls <callback> with all perms. No need to worry about memory.
 
 #endif //_FOUND_TREE_H_

@@ -3,20 +3,10 @@
 #include <string.h>
 
 #include "main.h"
+#include "found_tree.h"
 
-struct s_node
-{
-	int* perm;
-	int level;
-};
-typedef struct s_node s_node;
-
-// This array will contain pointers to all found nodes.
-struct {
-	s_node** array; // The array itself.
-	int final_size; // The final_size of the array, calculated on run-time.
-	int next_index; // The index of the next free space.
-} found_array;
+int current_level;
+unsigned long long found = 0;
 
 // Returns a new, dynamically allocated, permutation. Exits program on error.
 int* allocate_perm()
@@ -25,14 +15,6 @@ int* allocate_perm()
 	ALLOC_VALIDATE(perm)
 
 	return perm;
-}
-
-s_node* allocate_node()
-{
-	s_node* node = calloc(1, sizeof(s_node));
-	ALLOC_VALIDATE(node)
-
-	return node;
 }
 
 int* get_initial_perm()
@@ -113,181 +95,100 @@ void rearrange_perm(int* perm)
 	free(perm_temp);
 }
 
-// Checks whether they are equal. Both perms must be arranged!
-int perm_equal(const int* perm1, const int* perm2)
-{
-	for (int i = 0; i < K; i++)
-		if (perm1[i] != perm2[i]) return 0;
-
-	return 1;
-}
-
-// If not found returns null.
-s_node* find_perm_node(const int* perm)
-{
-	for (int i = 0; i < found_array.next_index; i++)
-	{
-		s_node* found_perm = found_array.array[i];
-		if (perm_equal(found_perm->perm, perm)) return found_perm;
-	}
-
-	return 0;
-}
-
-// Populates the children array of the given s_node. (All nodes are dynamically allocated)
-void populate_children(s_node* parent_node)
+unsigned long long find_children_for_perm(int* perm)
 {
 	// For every child, perform the corresponding S operation
 	for (int i = 0; i < N-1; i++)
 	{
-		int new_level = parent_node->level + 1;
+		int new_level = current_level + 1;
 
 		// Get next perm
-		int* si_perm = S(parent_node->perm, i + 1);
+		int* si_perm = S(perm, i + 1);
 		rearrange_perm(si_perm);
 
-		// Check whether we already found it
-		s_node* found_perm = find_perm_node(si_perm);
-		if (found_perm)
-		{
-			free(si_perm);
-			continue;
-		}
-
-		// Initialize a new node for the child
-		s_node* child_node = allocate_node();
-		child_node->perm = si_perm;
-		child_node->level = new_level;
-
-		// Add to found array
-		found_array.array[found_array.next_index++] = child_node;
-	}
-}
-
-// Prints <n> tabs
-void print_indent(int n)
-{
-	for (int i = 0; i < n; i++) printf("   ");
-}
-
-int found_array_biggest_level()
-{
-	int biggest = 0;
-	for (int i = 0; i < found_array.next_index; i++)
-		if (found_array.array[i]->level > biggest)
-			biggest = found_array.array[i]->level;
-
-	return biggest;
-}
-
-void initialize_found_array()
-{
-	// Calculate final_size. Formula is (N * (N-1) * ... * (N - K + 1)) / K
-	found_array.final_size = 1;
-	for (int i = 0; i <= (K-1); i++) found_array.final_size *= (N - i);
-	found_array.final_size /= K;
-//	printf("Size: %d\n", found_array.final_size);
-
-	// Allocate memory
-	found_array.array = calloc(found_array.final_size, sizeof(s_node*));
-	ALLOC_VALIDATE(found_array.array)
-
-	found_array.next_index = 0;
-}
-
-// Frees both nodes and perms
-void free_found_array()
-{
-	for (int i = 0; i < found_array.next_index; i++)
-	{
-		s_node* node = found_array.array[i];
-		free(node->perm);
-		free(node);
-	}
-}
-
-void print_level(int level)
-{
-	printf("Level %d:\n", level);
-	for (int i = 0; i < found_array.next_index; i++)
-	{
-		s_node* node = found_array.array[i];
-		if (node->level == level)
-		{
-			print_perm(node->perm);
-			putchar(' ');
-		}
+		// Add this perm!
+		if (add_permutation(si_perm, new_level)) found++;
+		free(si_perm);
 	}
 
-	putchar('\n');
+	return found;
 }
 
-// Populates the children for all nodes of given level at found_array
-void populate_children_for_level(int level)
+unsigned long long get_final_size()
 {
-	int s = found_array.next_index; // It might change later
+	unsigned long long final_size = 1;
+	for (int i = 0; i <= (K-1); i++) final_size *= (N - i);
+	final_size /= K;
 
-	unsigned long long counter = 0;
-	for (int i = 0; i < s; i++)
-	{
-		s_node* node = found_array.array[i];
-		if (node->level == level) counter++;
-	}
-	printf("Level %d has %llu nodes, calculating children...\n", level, counter);
+	return final_size;
+}
 
-	for (int i = 0; i < s; i++)
-	{
-		s_node* node = found_array.array[i];
-		if (node->level == level) populate_children(node);
-	}
+// Gets children for this prem only if it's level is right. This callback will be called with every perm we have.
+void find_children_for_current_level(int* perm, int level)
+{
+	if (level == current_level) find_children_for_perm(perm);
+}
+
+void iterator_print_perm(int* perm, int level)
+{
+	print_perm(perm);
+	printf(" <%d>\n", level);
 }
 
 int main()
 {
-	initialize_found_array();
-	printf("Final size: %d\n", found_array.final_size);
+	unsigned long long final_size = get_final_size();
+	printf("Final size: %llu\n", final_size);
 
-	// Initialize head
-	s_node* head = allocate_node();
-	head->perm = get_initial_perm();
-	head->level = 0;
-
-	// Add head to found_array
-	found_array.array[found_array.next_index++] = head;
+	// Add initial permutation
+	int* initial_perm = get_initial_perm();
+	add_permutation(initial_perm, 0);
+	found++;
+	free(initial_perm);
 
 	// 2, 3, sh-ager
-	int level = 0;
-	while (found_array.next_index < found_array.final_size)
+	while (found < final_size)
 	{
-		populate_children_for_level(level++);
+		iterate_permutations(&find_children_for_current_level);
+		current_level++;
 	}
 
-	int biggest_level = found_array_biggest_level();
-	for (int i = biggest_level; i >= 0; i--) print_level(i);
+	iterate_permutations(&iterator_print_perm);
 
-	printf("Done. Total Size: %d\n", found_array.next_index);
+	printf("Done. Total Size: %llu\n", found);
 
 	// Allocate polynom
-	unsigned long long* polynom = calloc(biggest_level+1, sizeof(unsigned long long));
-	ALLOC_VALIDATE(polynom)
-
-	// Generate polynom
-	for (int i = 0; i < found_array.final_size; i++)
-	{
-		s_node* node = found_array.array[i];
-		polynom[node->level]++;
-	}
-
-	// Print polynom
-	for (int i = 0; i <= biggest_level; i++)
-	{
-		printf("%lluq^%d", polynom[i], i);
-		if (i != biggest_level) printf(" + ");
-		else putchar('\n');
-	}
-
-	free(polynom);
-	free_found_array();
+//	unsigned long long* polynom = calloc(current_level+1, sizeof(unsigned long long));
+//	ALLOC_VALIDATE(polynom)
+//
+//	// Generate polynom
+//	for (int i = 0; i < found_array.final_size; i++)
+//	{
+//		s_node* node = found_array.array[i];
+//		polynom[node->level]++;
+//	}
+//
+//	// Print polynom
+//	for (int i = 0; i <= biggest_level; i++)
+//	{
+//		printf("%lluq^%d", polynom[i], i);
+//		if (i != biggest_level) printf(" + ");
+//		else putchar('\n');
+//	}
 
 	return 0;
 }
+
+//int main()
+//{
+//	initialize_found_tree();
+//	int perm1[K] = {1, 2, 3, 4};
+//	int perm2[K] = {3, 2, 4, 1};
+//	int perm3[K] = {1, 2, 4, 3};
+//	add_permutation(perm1, 1);
+//	add_permutation(perm2, 2);
+//	add_permutation(perm3, 4);
+//	iterate_permutations(&print_perm);
+//	putchar('\n');
+//	print_found_tree();
+//}
