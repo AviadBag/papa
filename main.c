@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define N 9
-#define K 9
+#define N 4
+#define K 4
 
 #define ALLOC_VALIDATE(p) if (!p) { printf("Not enough memory!"); exit(1); }
 
@@ -11,7 +11,6 @@ struct s_node
 {
 	int* perm;
 	int level;
-	struct s_node* children[N];
 };
 typedef struct s_node s_node;
 
@@ -154,7 +153,6 @@ void populate_children(s_node* parent_node)
 		s_node* found_perm = find_perm_node(si_perm);
 		if (found_perm)
 		{
-			parent_node->children[i] = 0;
 			free(si_perm);
 			continue;
 		}
@@ -163,9 +161,6 @@ void populate_children(s_node* parent_node)
 		s_node* child_node = allocate_node();
 		child_node->perm = si_perm;
 		child_node->level = new_level;
-
-		// Add new child to father!
-		parent_node->children[i] = child_node;
 
 		// Add to found array
 		found_array.array[found_array.next_index++] = child_node;
@@ -176,20 +171,6 @@ void populate_children(s_node* parent_node)
 void print_indent(int n)
 {
 	for (int i = 0; i < n; i++) printf("   ");
-}
-
-void print_tree(s_node * head)
-{
-	print_perm(head->perm);
-	for (int i = 0; i < N; i++)
-	{
-		if (head->children[i])
-		{
-			print_indent(head->level+1);
-			printf("s(%d) ---> ", i+1);
-			print_tree(head->children[i]);
-		}
-	}
 }
 
 int found_array_biggest_level()
@@ -255,7 +236,7 @@ void populate_children_for_level(int level)
 		s_node* node = found_array.array[i];
 		if (node->level == level) counter++;
 	}
-	printf("Level %d has %llu nodes\n", level, counter);
+	printf("Level %d has %llu nodes, calculating children...\n", level, counter);
 
 	for (int i = 0; i < s; i++)
 	{
@@ -267,6 +248,7 @@ void populate_children_for_level(int level)
 int main()
 {
 	initialize_found_array();
+	printf("Final size: %d\n", found_array.final_size);
 
 	// Initialize head
 	s_node* head = allocate_node();
@@ -280,7 +262,6 @@ int main()
 	int level = 0;
 	while (found_array.next_index < found_array.final_size)
 	{
-		printf("Starting level %d\n", level);
 		populate_children_for_level(level++);
 	}
 
