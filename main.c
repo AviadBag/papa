@@ -7,6 +7,7 @@
 
 int current_level;
 unsigned long long found = 0;
+unsigned long long* polynom;
 
 // Returns a new, dynamically allocated, permutation. Exits program on error.
 int* allocate_perm()
@@ -107,7 +108,13 @@ unsigned long long find_children_for_perm(int* perm)
 		rearrange_perm(si_perm);
 
 		// Add this perm!
-		if (add_permutation(si_perm, new_level)) found++;
+		if (add_permutation(si_perm, new_level))
+		{
+			// It was a new perm
+			found++;
+			print_perm(si_perm);
+			printf(" | ");
+		}
 		free(si_perm);
 	}
 
@@ -135,46 +142,56 @@ void iterator_print_perm(int* perm, int level)
 	printf(" <%d>\n", level);
 }
 
+void iterator_generate_polynom(int* perm, int level)
+{
+	polynom[level]++;
+}
+
 int main()
 {
 	unsigned long long final_size = get_final_size();
 	printf("Final size: %llu\n", final_size);
 
+	initialize_found_tree();
+
 	// Add initial permutation
 	int* initial_perm = get_initial_perm();
 	add_permutation(initial_perm, 0);
 	found++;
+
+	printf("Level 0:\n| ");
+	print_perm(initial_perm);
+	printf(" |");
+
 	free(initial_perm);
 
 	// 2, 3, sh-ager
 	while (found < final_size)
 	{
+		printf("\nLevel %d:\n| ", current_level+1);
 		iterate_permutations(&find_children_for_current_level);
 		current_level++;
 	}
-
-	iterate_permutations(&iterator_print_perm);
+	putchar('\n');
 
 	printf("Done. Total Size: %llu\n", found);
 
 	// Allocate polynom
-//	unsigned long long* polynom = calloc(current_level+1, sizeof(unsigned long long));
-//	ALLOC_VALIDATE(polynom)
-//
-//	// Generate polynom
-//	for (int i = 0; i < found_array.final_size; i++)
-//	{
-//		s_node* node = found_array.array[i];
-//		polynom[node->level]++;
-//	}
-//
-//	// Print polynom
-//	for (int i = 0; i <= biggest_level; i++)
-//	{
-//		printf("%lluq^%d", polynom[i], i);
-//		if (i != biggest_level) printf(" + ");
-//		else putchar('\n');
-//	}
+	polynom = calloc(current_level+1, sizeof(unsigned long long));
+	ALLOC_VALIDATE(polynom)
+
+	iterate_permutations(iterator_generate_polynom);
+
+	// Print polynom
+	for (int i = 0; i <= current_level; i++)
+	{
+		printf("%lluq^%d", polynom[i], i);
+		if (i != current_level) printf(" + ");
+		else putchar('\n');
+	}
+
+	free(polynom);
+	free_found_tree();
 
 	return 0;
 }

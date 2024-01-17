@@ -122,3 +122,27 @@ void iterate_permutations(void (* callback)(int* perm, int level))
 	iterate_permutations_recursive(&found_tree, callback, perm, 0);
 }
 
+// Helper function to free the tree recursively
+void free_found_tree_recursive(tree_node* node) {
+	if (node == NULL) {
+		return;
+	}
+
+	// If the node is not a leaf, free its children
+	if (!node->is_leaf) {
+		for (int i = 0; i < N; i++) {
+			if (node->children[i] != NULL) {
+				free_found_tree_recursive(node->children[i]);
+			}
+		}
+	}
+
+	// Free the node itself
+	if (node != &found_tree) free(node);
+}
+
+void free_found_tree()
+{
+	free_found_tree_recursive(&found_tree);
+}
+

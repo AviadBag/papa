@@ -18,5 +18,6 @@ void initialize_found_tree();
 bool add_permutation(int* perm, int level); // Returns false if the perm already existed.
 void print_found_tree();
 void iterate_permutations(void (* callback)(int* perm, int level)); // Calls <callback> with all perms. No need to worry about memory.
+void free_found_tree();
 
 #endif //_FOUND_TREE_H_
