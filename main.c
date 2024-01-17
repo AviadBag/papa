@@ -153,7 +153,6 @@ void iterator_generate_polynom(int* perm, int level)
 int main()
 {
 	unsigned long long final_size = get_final_size();
-	printf("Final size: %llu\n", final_size);
 
 	initialize_found_tree();
 
