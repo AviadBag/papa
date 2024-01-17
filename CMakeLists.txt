@@ -6,4 +6,8 @@ set(CMAKE_OSX_ARCHITECTURES "arm64")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer")
 
-add_executable(papa main.c)
+add_executable(papa main.c
+        found_tree.h
+        main.h
+        found_tree.c
+)

@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define N 4
-#define K 4
-
-#define ALLOC_VALIDATE(p) if (!p) { printf("Not enough memory!"); exit(1); }
+#include "main.h"
 
 struct s_node
 {
