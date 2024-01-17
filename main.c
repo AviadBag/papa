@@ -112,8 +112,11 @@ unsigned long long find_children_for_perm(int* perm)
 		{
 			// It was a new perm
 			found++;
-			print_perm(si_perm);
-			printf(" | ");
+			if (PRINT_PERMS)
+			{
+				print_perm(si_perm);
+				printf(" | ");
+			}
 		}
 		free(si_perm);
 	}
@@ -159,16 +162,19 @@ int main()
 	add_permutation(initial_perm, 0);
 	found++;
 
-	printf("Level 0:\n| ");
-	print_perm(initial_perm);
-	printf(" |");
+	if (PRINT_PERMS)
+	{
+		printf("Level 0:\n| ");
+		print_perm(initial_perm);
+		printf(" |");
+	}
 
 	free(initial_perm);
 
 	// 2, 3, sh-ager
 	while (found < final_size)
 	{
-		printf("\nLevel %d:\n| ", current_level+1);
+		if (PRINT_PERMS) printf("\nLevel %d:\n| ", current_level+1);
 		iterate_permutations(&find_children_for_current_level);
 		current_level++;
 	}
@@ -195,17 +201,3 @@ int main()
 
 	return 0;
 }
-
-//int main()
-//{
-//	initialize_found_tree();
-//	int perm1[K] = {1, 2, 3, 4};
-//	int perm2[K] = {3, 2, 4, 1};
-//	int perm3[K] = {1, 2, 4, 3};
-//	add_permutation(perm1, 1);
-//	add_permutation(perm2, 2);
-//	add_permutation(perm3, 4);
-//	iterate_permutations(&print_perm);
-//	putchar('\n');
-//	print_found_tree();
-//}

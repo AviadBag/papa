@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "found_tree.h"
 
+tree_node found_tree;
+
 tree_node* allocate_tree_node()
 {
 	tree_node* node = calloc(1, sizeof(tree_node));

@@ -3,12 +3,13 @@
 
 #include <stdio.h>
 
-#define N 11
-#define K 11
-
 typedef int bool;
 #define true 1
 #define false 0
+
+#define N 11
+#define K 11
+#define PRINT_PERMS true
 
 #define ALLOC_VALIDATE(p) if (!p) { printf("Not enough memory!"); exit(1); }
 

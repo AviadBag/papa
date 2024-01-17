@@ -12,7 +12,7 @@ typedef struct s_tree_node
 	};
 } tree_node;
 
-tree_node found_tree;
+extern tree_node found_tree;
 
 void initialize_found_tree();
 bool add_permutation(int* perm, int level); // Returns false if the perm already existed.
