@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "main.h"
 #include "found_tree.h"
+
+#define RED     "\033[31m"      /* Red */
+#define RESET   "\033[0m"
 
 int current_level;
 unsigned long long found = 0;
@@ -18,11 +22,36 @@ int* allocate_perm()
 	return perm;
 }
 
+// Shifts the GIVEN PERM left.
+void shift_left(int* perm)
+{
+	int first = perm[0]; // Store the first element
+	for (int i = 0; i < K - 1; i++)
+	{
+		perm[i] = perm[i + 1]; // Shift each element one position to the left
+	}
+	perm[K - 1] = first; // Move the first element to the last position
+}
+
 int* get_initial_perm()
 {
 	int* perm = allocate_perm();
 	for (int i = 0; i < K; i++) perm[i] = i+1;
 	return perm;
+}
+
+unsigned int get_inversion(const int* perm)
+{
+	unsigned int inv = 0;
+	for (int i = 0; i < K-1; i++)
+	{
+		for (int j = i+1; j < K; j++)
+		{
+			if (perm[i] > perm[j]) inv++;
+		}
+	}
+
+	return inv;
 }
 
 void print_perm(int* perm)
@@ -32,6 +61,36 @@ void print_perm(int* perm)
 	{
 		if (i + 1 == K) printf("%d)", perm[i]);
 		else printf("%d, ", perm[i]);
+	}
+}
+
+void print_perm_inversion(int* perm)
+{
+	// Get the lowest inversion
+	unsigned int lowest_inversion = UINT_MAX;
+	for (int i = 0; i < K; i++)
+	{
+		unsigned int inversion = get_inversion(perm);
+		if (inversion < lowest_inversion) lowest_inversion = inversion;
+		shift_left(perm);
+	}
+
+	// Print lowest inversion
+	printf(" [%u] ", lowest_inversion);
+
+	// Print lowest inversion's cycles
+	for (int i = 0; i < K; i++)
+	{
+		unsigned int inversion = get_inversion(perm);
+		if (inversion == lowest_inversion)
+		{
+			printf(RED);
+			print_perm(perm);
+			printf(RESET);
+			if (i + 1 < K) putchar(', ');
+		}
+
+		shift_left(perm);
 	}
 }
 
@@ -115,6 +174,7 @@ unsigned long long find_children_for_perm(int* perm)
 			if (PRINT_PERMS)
 			{
 				print_perm(si_perm);
+				print_perm_inversion(si_perm);
 				printf(" | ");
 			}
 		}
@@ -139,12 +199,6 @@ void find_children_for_current_level(int* perm, int level)
 	if (level == current_level) find_children_for_perm(perm);
 }
 
-void iterator_print_perm(int* perm, int level)
-{
-	print_perm(perm);
-	printf(" <%d>\n", level);
-}
-
 void iterator_generate_polynom(int* perm, int level)
 {
 	polynom[level]++;
@@ -165,6 +219,7 @@ int main()
 	{
 		printf("Level 0:\n| ");
 		print_perm(initial_perm);
+		print_perm_inversion(initial_perm);
 		printf(" |");
 	}
 
