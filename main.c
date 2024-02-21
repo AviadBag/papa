@@ -87,7 +87,7 @@ void print_perm_inversion(int* perm)
 			printf(RED);
 			print_perm(perm);
 			printf(RESET);
-			if (i + 1 < K) putchar(', ');
+			if (i + 1 < K) printf(", ");
 		}
 
 		shift_left(perm);
