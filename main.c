@@ -76,7 +76,7 @@ void print_perm_inversion(int* perm)
 	}
 
 	// Print lowest inversion
-	printf(" [%u] ", lowest_inversion);
+	//printf(" [%u] ", lowest_inversion);
 
 	// Print lowest inversion's cycles
 	for (int i = 0; i < K; i++)
@@ -84,9 +84,8 @@ void print_perm_inversion(int* perm)
 		unsigned int inversion = get_inversion(perm);
 		if (inversion == lowest_inversion)
 		{
-			printf(RED);
+			printf(" min=");
 			print_perm(perm);
-			printf(RESET);
 			if (i + 1 < K) printf(", ");
 		}
 
