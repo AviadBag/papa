@@ -173,10 +173,8 @@ void iterator_generate_polynom(int* perm, int level)
 	polynom[level]++;
 }
 
-int main()
+void init_data()
 {
-	unsigned long long final_size = get_final_size();
-
 	initialize_found_tree();
 
 	// Add initial permutation
@@ -192,6 +190,11 @@ int main()
 	}
 
 	free(initial_perm);
+}
+
+void get_data()
+{
+	unsigned long long final_size = get_final_size();
 
 	// 2, 3, sh-ager
 	while (found < final_size)
@@ -203,7 +206,10 @@ int main()
 	putchar('\n');
 
 	printf("Done. Total Size: %llu\n", found);
+}
 
+void print_polynom()
+{
 	// Allocate polynom
 	polynom = calloc(current_level+1, sizeof(unsigned long long));
 	ALLOC_VALIDATE(polynom)
@@ -219,7 +225,19 @@ int main()
 	}
 
 	free(polynom);
+}
+
+void cleanup()
+{
 	free_found_tree();
+}
+
+int main()
+{
+	init_data();
+	get_data();
+	print_polynom();
+	cleanup();
 
 	return 0;
 }
