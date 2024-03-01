@@ -64,35 +64,6 @@ void print_perm(int* perm)
 	}
 }
 
-void print_perm_inversion(int* perm)
-{
-	// Get the lowest inversion
-	unsigned int lowest_inversion = UINT_MAX;
-	for (int i = 0; i < K; i++)
-	{
-		unsigned int inversion = get_inversion(perm);
-		if (inversion < lowest_inversion) lowest_inversion = inversion;
-		shift_left(perm);
-	}
-
-	// Print lowest inversion
-	//printf(" [%u] ", lowest_inversion);
-
-	// Print lowest inversion's cycles
-	for (int i = 0; i < K; i++)
-	{
-		unsigned int inversion = get_inversion(perm);
-		if (inversion == lowest_inversion)
-		{
-			printf(" min=");
-			print_perm(perm);
-			if (i + 1 < K) printf(", ");
-		}
-
-		shift_left(perm);
-	}
-}
-
 // Returns the index of the given number in the permutation. -1 if not found
 int index_of(const int* perm, int what)
 {
@@ -173,7 +144,6 @@ unsigned long long find_children_for_perm(int* perm)
 			if (PRINT_PERMS)
 			{
 				print_perm(si_perm);
-				print_perm_inversion(si_perm);
 				printf(" | ");
 			}
 		}
@@ -218,7 +188,6 @@ int main()
 	{
 		printf("Level 0:\n| ");
 		print_perm(initial_perm);
-		print_perm_inversion(initial_perm);
 		printf(" |");
 	}
 
