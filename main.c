@@ -12,6 +12,7 @@
 int current_level;
 unsigned long long found = 0;
 unsigned long long* polynom;
+unsigned int max_inversion = 0;
 
 // Returns a new, dynamically allocated, permutation. Exits program on error.
 int* allocate_perm()
@@ -203,9 +204,9 @@ void get_data()
 		iterate_permutations(&find_children_for_current_level);
 		current_level++;
 	}
-	putchar('\n');
+	if (PRINT_PERMS) putchar('\n');
 
-	printf("Done. Total Size: %llu\n", found);
+	printf("Finished generating perms. Total Size: %llu\n", found);
 }
 
 void print_polynom()
@@ -232,10 +233,74 @@ void cleanup()
 	free_found_tree();
 }
 
+// Sets r to be p(s)
+void perms_composition(const int* p, const int* s, int* r)
+{
+	for (int i = 0; i < K; i++)
+	{
+		r[i] = p[s[i]-1];
+	}
+}
+
+// Finds the minimum inversion of p*(c^i)*s
+unsigned int find_min_inversion(int* p, int* s)
+{
+	unsigned int min_inv = UINT_MAX;
+	for (int i = 0; i < K; i++)
+	{
+		int comp[K];
+		perms_composition(p, s, comp);
+		unsigned int inv = get_inversion(comp);
+		if (inv < min_inv) min_inv = inv;
+
+		shift_left(s); // Next shift. (Finally will cancel out).
+	}
+
+	return min_inv;
+}
+
+void calculate_values_iterator(int* perm, int level)
+{
+	static int phase = 1;
+	static int* phase1_perm;
+
+	if (phase == 1)
+	{
+		// We only have one perm, we need to go over all perms with this perm.
+		phase = 2;
+		phase1_perm = perm;
+		iterate_permutations(&calculate_values_iterator);
+		phase = 1;
+	}
+	else
+	{
+		// We have two perms!
+		unsigned int min_inv = find_min_inversion(phase1_perm, perm);
+		if (min_inv > max_inversion) max_inversion = min_inv;
+
+		if (PRINT_PERMS)
+		{
+			printf("Minimum inversion for ");
+			print_perm(phase1_perm);
+			printf(" and ");
+			print_perm(perm);
+			printf(" is: %d\n", min_inv);
+		}
+	}
+}
+
+void calculate_values()
+{
+	// Iterate over all pairs of permutations.
+	iterate_permutations(&calculate_values_iterator);
+	printf("Max inversion: %d\n", max_inversion);
+}
+
 int main()
 {
 	init_data();
 	get_data();
+	calculate_values();
 	print_polynom();
 	cleanup();
 

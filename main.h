@@ -7,9 +7,9 @@ typedef int bool;
 #define true 1
 #define false 0
 
-#define N 4
-#define K 4
-#define PRINT_PERMS true
+#define N 7
+#define K 7
+#define PRINT_PERMS false
 
 #define ALLOC_VALIDATE(p) if (!p) { printf("Not enough memory!"); exit(1); }
 
