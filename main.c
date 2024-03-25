@@ -320,6 +320,29 @@ void calculate_values()
 	printf("Max inversion: %d\n", max_inversion);
 }
 
+int number_of_cycles(const int *perm)
+{
+	int cycles = 0;
+	bool visited[K];
+	memset(visited, 0, K * sizeof(bool));
+
+	for (int i = 0; i < K; i++)
+	{
+		if (!visited[i])
+		{
+			cycles++;
+			int j = i;
+			do
+			{
+				visited[j] = true;
+				j = perm[j] - 1;
+			} while (j != i);
+		}
+	}
+
+	return cycles;
+}
+
 int main()
 {
 	init_data();
