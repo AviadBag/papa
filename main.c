@@ -57,15 +57,28 @@ unsigned int get_inversion(const int *perm)
 	return inv;
 }
 
-void print_perm(int *perm)
+void print_perm_l(int *perm, int len)
 {
 	printf("(");
-	for (int i = 0; i < K; i++)
+	for (int i = 0; i < len; i++)
 	{
-		if (i + 1 == K)
+		if (i + 1 == len)
 			printf("%d)", perm[i]);
 		else
 			printf("%d, ", perm[i]);
+	}
+}
+
+void print_perm(int* perm) { print_perm_l(perm, K); }
+
+void print_perm_with_division(int* perm)
+{
+	const int kS[] = kS_DEF;
+	for (int i = 0; i < NUMBER_OF_kS; i++)
+	{
+		int k = kS[i];
+		print_perm_l(perm, k);
+		perm += k;
 	}
 }
 
@@ -108,10 +121,10 @@ int *Si(const int *perm, int i)
 }
 
 // Returns the index of the smallest number in the perm
-int index_of_smallest(const int *perm)
+int index_of_smallest(const int *perm, int len)
 {
 	int index = 0;
-	for (int i = 0; i < K; i++)
+	for (int i = 0; i < len; i++)
 	{
 		if (perm[i] < perm[index])
 			index = i;
@@ -120,23 +133,35 @@ int index_of_smallest(const int *perm)
 	return index;
 }
 
-// Rearranges the given perm, so the first number is the lowest one. (Keeps the permutation intact).
-void rearrange_perm(int *perm)
+// rearrange_perm(perm) with a given length.
+void rearrange_perm_l(int *perm, int len)
 {
-	int smallest_i = index_of_smallest(perm);
+	int smallest_i = index_of_smallest(perm, len);
 	if (smallest_i == 0)
 		return; // Already arranged
 
 	int *perm_temp = duplicate_perm(perm);
-	int n = K - smallest_i;
+	int n = len - smallest_i;
 
 	// Move <n> cycles
-	for (int i = 0; i < K; i++)
+	for (int i = 0; i < len; i++)
 	{
-		perm[(i + n) % K] = perm_temp[i];
+		perm[(i + n) % len] = perm_temp[i];
 	}
 
 	free(perm_temp);
+}
+
+// Rearranges the given perm, so the first number is the lowest one. (Keeps the permutation intact).
+void rearrange_perm(int *perm)
+{
+	const int kS[] = kS_DEF;
+	for (int i = 0; i < NUMBER_OF_kS; i++)
+	{
+		int k = kS[i];
+		rearrange_perm_l(perm, k);
+		perm += k;
+	}
 }
 
 unsigned long long find_children_for_perm(int *perm)
@@ -159,7 +184,7 @@ unsigned long long find_children_for_perm(int *perm)
 				found++;
 				if (PRINT_PERMS)
 				{
-					print_perm(sij_perm);
+					print_perm_with_division(sij_perm);
 					printf(" | ");
 				}
 			}
@@ -204,7 +229,7 @@ void init_data()
 	if (PRINT_PERMS)
 	{
 		printf("Level 0:\n| ");
-		print_perm(initial_perm);
+		print_perm_with_division(initial_perm);
 		printf(" |");
 	}
 
@@ -347,7 +372,7 @@ int main()
 {
 	init_data();
 	get_data();
-	calculate_values();
+//	calculate_values();
 	print_polynom();
 	cleanup();
 
