@@ -1,60 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
 #include "main.h"
 #include "found_tree.h"
 
-#define RED "\033[31m" /* Red */
-#define RESET "\033[0m"
-
 int current_level;
 unsigned long long found = 0;
 unsigned long long *polynom;
-unsigned int max_len = 0;
 
 // Returns a new, dynamically allocated, permutation. Exits program on error.
 int *allocate_perm()
 {
-	int *perm = calloc(K, sizeof(int));
+	int *perm = calloc(N, sizeof(int));
 	ALLOC_VALIDATE(perm)
 
 	return perm;
 }
 
-// Shifts the GIVEN PERM left.
-void shift_left(int *perm)
-{
-	int first = perm[0]; // Store the first element
-	for (int i = 0; i < K - 1; i++)
-	{
-		perm[i] = perm[i + 1]; // Shift each element one position to the left
-	}
-	perm[K - 1] = first; // Move the first element to the last position
-}
-
 int *get_initial_perm()
 {
 	int *perm = allocate_perm();
-	for (int i = 0; i < K; i++)
+	for (int i = 0; i < N; i++)
 		perm[i] = i + 1;
 	return perm;
-}
-
-unsigned int get_inversion(const int *perm)
-{
-	unsigned int inv = 0;
-	for (int i = 0; i < K - 1; i++)
-	{
-		for (int j = i + 1; j < K; j++)
-		{
-			if (perm[i] > perm[j])
-				inv++;
-		}
-	}
-
-	return inv;
 }
 
 void print_perm_l(int *perm, int len)
@@ -68,8 +37,6 @@ void print_perm_l(int *perm, int len)
 			printf("%d, ", perm[i]);
 	}
 }
-
-void print_perm(int* perm) { print_perm_l(perm, K); }
 
 void print_perm_with_division(int* perm)
 {
@@ -85,7 +52,7 @@ void print_perm_with_division(int* perm)
 // Returns the index of the given number in the permutation. -1 if not found
 int index_of(const int *perm, int what)
 {
-	for (int i = 0; i < K; i++)
+	for (int i = 0; i < N; i++)
 		if (perm[i] == what)
 			return i;
 
@@ -95,7 +62,7 @@ int index_of(const int *perm, int what)
 int *duplicate_perm(const int *perm)
 {
 	int *new_perm = allocate_perm();
-	memcpy(new_perm, perm, K * sizeof(int));
+	memcpy(new_perm, perm, N * sizeof(int));
 	return new_perm;
 }
 
@@ -113,11 +80,6 @@ int *Sij(const int *perm, int i, int j)
 		new_perm[b] = i;
 
 	return new_perm;
-}
-
-int *Si(const int *perm, int i)
-{
-	return Sij(perm, i, i + 1);
 }
 
 // Returns the index of the smallest number in the perm
@@ -198,9 +160,9 @@ unsigned long long find_children_for_perm(int *perm)
 unsigned long long get_final_size()
 {
 	unsigned long long final_size = 1;
-	for (int i = 0; i <= (K - 1); i++)
+	for (int i = 0; i <= (N - 1); i++)
 		final_size *= (N - i);
-	final_size /= K;
+	final_size /= N;
 
 	return final_size;
 }
@@ -278,94 +240,6 @@ void print_polynom()
 void cleanup()
 {
 	free_found_tree();
-}
-
-unsigned int number_of_cycles(const int *perm)
-{
-	unsigned int cycles = 0;
-	bool visited[K];
-	memset(visited, 0, K * sizeof(bool));
-
-	for (int i = 0; i < K; i++)
-	{
-		if (!visited[i])
-		{
-			cycles++;
-			int j = i;
-			do
-			{
-				visited[j] = true;
-				j = perm[j] - 1;
-			} while (j != i);
-		}
-	}
-
-	return cycles;
-}
-
-// Sets r to be p(s)
-void perms_composition(const int *p, const int *s, int *r)
-{
-	for (int i = 0; i < K; i++)
-	{
-		r[i] = p[s[i] - 1];
-	}
-}
-
-// Finds the minimum len of p*(c^i)*s
-unsigned int find_min_len(int *p, int *s)
-{
-	unsigned int min_l = UINT_MAX;
-	for (int i = 0; i < K; i++)
-	{
-		int comp[K];
-		perms_composition(p, s, comp);
-		unsigned int l = N - number_of_cycles(comp);
-		if (l < min_l)
-			min_l = l;
-
-		shift_left(s); // Next shift. (Finally will cancel out).
-	}
-
-	return min_l;
-}
-
-void calculate_values_iterator(int *perm, int level)
-{
-	static int phase = 1;
-	static int *phase1_perm;
-
-	if (phase == 1)
-	{
-		// We only have one perm, we need to go over all perms with this perm.
-		phase = 2;
-		phase1_perm = perm;
-		iterate_permutations(&calculate_values_iterator);
-		phase = 1;
-	}
-	else
-	{
-		// We have two perms!
-		unsigned int min_l = find_min_len(phase1_perm, perm);
-		if (min_l > max_len)
-			max_len = min_l;
-
-		if (PRINT_PERMS)
-		{
-			printf("Minimum len for ");
-			print_perm(phase1_perm);
-			printf(" and ");
-			print_perm(perm);
-			printf(" is: %d\n", min_l);
-		}
-	}
-}
-
-void calculate_values()
-{
-	// Iterate over all pairs of permutations.
-	iterate_permutations(&calculate_values_iterator);
-	printf("Max len: %d\n", max_len);
 }
 
 int main()

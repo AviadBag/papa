@@ -53,7 +53,7 @@ tree_node* add_permutation_digit(tree_node* tree, int digit, int level)
 bool add_permutation(int* perm, int level)
 {
 	tree_node* node = &found_tree; // Start from the root.
-	for (int i = 0; i < K; i++)
+	for (int i = 0; i < N; i++)
 	{
 		tree_node* t = get_digit(node, perm[i]);
 		if (t)
@@ -63,8 +63,8 @@ bool add_permutation(int* perm, int level)
 			continue;
 		}
 
-		node = add_permutation_digit(node, perm[i], (i+1 == K) ? level : -1);
-		if (i + 1 == K) return true; // We just added the last digit. It was a new one!
+		node = add_permutation_digit(node, perm[i], (i+1 == N) ? level : -1);
+		if (i + 1 == N) return true; // We just added the last digit. It was a new one!
 	}
 
 	return false;
@@ -102,7 +102,7 @@ void iterate_permutations_recursive(tree_node* tree, void (* callback)(int* perm
 {
 	if (tree->is_leaf)
 	{
-		if (depth == K) callback(perm_so_far, tree->level);
+		if (depth == N) callback(perm_so_far, tree->level);
 		return; // We can go no further
 	}
 

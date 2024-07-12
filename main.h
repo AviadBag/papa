@@ -8,7 +8,6 @@ typedef int bool;
 #define false 0
 
 #define N 6
-#define K 6
 
 #define NUMBER_OF_kS 3
 #define kS_DEF {3, 2, 1}
