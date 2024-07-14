@@ -157,16 +157,6 @@ unsigned long long find_children_for_perm(int *perm)
 	return found;
 }
 
-unsigned long long get_final_size()
-{
-	unsigned long long final_size = 1;
-	for (int i = 0; i <= (N - 1); i++)
-		final_size *= (N - i);
-	final_size /= N;
-
-	return final_size;
-}
-
 // Gets children for this prem only if it's level is right. This callback will be called with every perm we have.
 void find_children_for_current_level(int *perm, int level)
 {
@@ -200,14 +190,15 @@ void init_data()
 
 void get_data()
 {
-	unsigned long long final_size = get_final_size();
-
 	// 2, 3, sh-ager
-	while (found < final_size)
+	unsigned long long last_found = 0;
+	while (true)
 	{
 		if (PRINT_PERMS)
 			printf("\nLevel %d:\n| ", current_level + 1);
 		iterate_permutations(&find_children_for_current_level);
+		if (found == last_found) break; // We found nothing
+		last_found = found;
 		current_level++;
 	}
 	if (PRINT_PERMS)

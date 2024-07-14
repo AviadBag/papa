@@ -7,10 +7,10 @@ typedef int bool;
 #define true 1
 #define false 0
 
-#define N 6
+#define N 5
 
-#define NUMBER_OF_kS 3
-#define kS_DEF {3, 2, 1}
+#define NUMBER_OF_kS 2
+#define kS_DEF {3, 2}
 
 #define PRINT_PERMS true
 
