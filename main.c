@@ -67,15 +67,15 @@ int *duplicate_perm(const int *perm)
 }
 
 // Performs an S operation on the given perm. Result is returned as a newly allocated perm.
-int *Sij(const int *perm, int i, int j)
+int *Si(const int *perm, int i)
 {
 	int *new_perm = duplicate_perm(perm);
 
 	// Perform operation (Switch between i and j)
 	int a = index_of(perm, i);
-	int b = index_of(perm, j);
+	int b = index_of(perm, i+1);
 	if (a != -1)
-		new_perm[a] = j;
+		new_perm[a] = i+1;
 	if (b != -1)
 		new_perm[b] = i;
 
@@ -131,27 +131,25 @@ unsigned long long find_children_for_perm(int *perm)
 	// For every child, perform the corresponding S operation
 	for (int i = 1; i < N; i++)
 	{
-		for (int j = i + 1; j <= N; j++)
+		int new_level = current_level + 1;
+
+		// Get next perm
+		int *si_perm = Si(perm, i);
+		rearrange_perm(si_perm);
+
+		// Add this perm!
+		if (add_permutation(si_perm, new_level))
 		{
-			int new_level = current_level + 1;
-
-			// Get next perm
-			int *sij_perm = Sij(perm, i, j);
-			rearrange_perm(sij_perm);
-
-			// Add this perm!
-			if (add_permutation(sij_perm, new_level))
+			// It was a new perm
+			found++;
+			if (PRINT_PERMS)
 			{
-				// It was a new perm
-				found++;
-				if (PRINT_PERMS)
-				{
-					print_perm_with_division(sij_perm);
-					printf(" | ");
-				}
+				printf("S%d -> ", i);
+				print_perm_with_division(si_perm);
+				printf(" | ");
 			}
-			free(sij_perm);
 		}
+		free(si_perm);
 	}
 
 	return found;

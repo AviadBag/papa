@@ -10,7 +10,7 @@ typedef int bool;
 #define N 5
 
 #define NUMBER_OF_kS 2
-#define kS_DEF {3, 2}
+#define kS_DEF {2, 3}
 
 #define PRINT_PERMS true
 
