@@ -7,7 +7,7 @@ typedef int bool;
 #define true 1
 #define false 0
 
-#define N 7
+#define N 8
 
 #define NUMBER_OF_kS 1
 #define kS_DEF {N}

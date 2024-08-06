@@ -287,41 +287,34 @@ unsigned int find_min_inversion(int *p, int *s)
 	return min_inv;
 }
 
-void calculate_values_iterator(int *perm, __attribute__((unused)) int level, __attribute__((unused)) void* extra_data)
+void calculate_values_2st_iterator(int *perm, __attribute__((unused)) int level, void* extra_data)
 {
-	static int phase = 1;
-	static int *phase1_perm;
+	int* first_perm = (int*) extra_data;
 
-	if (phase == 1)
-	{
-		// We only have one perm, we need to go over all perms with this perm.
-		phase = 2;
-		phase1_perm = perm;
-		iterate_permutations(&calculate_values_iterator, 0);
-		phase = 1;
-	}
-	else
-	{
-		// We have two perms!
-		unsigned int min_inv = find_min_inversion(phase1_perm, perm);
-		if (min_inv > max_inversion)
-			max_inversion = min_inv;
+	unsigned int min_inv = find_min_inversion(first_perm, perm);
+	if (min_inv > max_inversion)
+		max_inversion = min_inv;
 
-		if (PRINT_PERMS)
-		{
-			printf("Minimum inversion for ");
-			print_perm_l(phase1_perm, N);
-			printf(" and ");
-			print_perm_l(perm, N);
-			printf(" is: %d\n", min_inv);
-		}
+	if (PRINT_PERMS)
+	{
+		printf("Minimum inversion for ");
+		print_perm_l(first_perm, N);
+		printf(" and ");
+		print_perm_l(perm, N);
+		printf(" is: %d\n", min_inv);
 	}
+}
+
+void calculate_values_1st_iterator(int *perm, __attribute__((unused)) int level, __attribute__((unused)) void* extra_data)
+{
+	// Iterate over all permutations with this permutation
+	iterate_permutations(&calculate_values_2st_iterator, (void*) perm);
 }
 
 void calculate_values()
 {
 	// Iterate over all pairs of permutations.
-	iterate_permutations(&calculate_values_iterator, 0);
+	iterate_permutations(&calculate_values_1st_iterator, 0);
 	printf("Max len: %d\n", max_inversion);
 }
 
