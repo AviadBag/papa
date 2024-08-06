@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+	#include <time.h>
 
 #include "main.h"
 #include "found_tree.h"
@@ -326,11 +327,17 @@ void calculate_values()
 
 int main()
 {
+	clock_t start = clock();
+
 	init_data();
 	get_data();
 	calculate_values();
 	print_polynom();
 	cleanup();
+
+	clock_t stop = clock();
+	double elapsed = (double) (stop - start) / CLOCKS_PER_SEC;
+	printf("\nTime elapsed: %.5fs\n", elapsed);
 
 	return 0;
 }
