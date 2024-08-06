@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "main.h"
 #include "found_tree.h"
@@ -8,6 +9,7 @@
 int current_level;
 unsigned long long found = 0;
 unsigned long long *polynom;
+unsigned int max_inversion = 0;
 
 // Returns a new, dynamically allocated, permutation. Exits program on error.
 int *allocate_perm()
@@ -231,11 +233,102 @@ void cleanup()
 	free_found_tree();
 }
 
+unsigned int get_inversion(const int *perm)
+{
+	unsigned int inv = 0;
+	for (int i = 0; i < N - 1; i++)
+	{
+		for (int j = i + 1; j < N; j++)
+		{
+			if (perm[i] > perm[j])
+				inv++;
+		}
+	}
+
+	return inv;
+}
+
+// Shifts the GIVEN PERM left.
+void shift_left(int *perm)
+{
+	int first = perm[0]; // Store the first element
+	for (int i = 0; i < N - 1; i++)
+	{
+		perm[i] = perm[i + 1]; // Shift each element one position to the left
+	}
+	perm[N - 1] = first; // Move the first element to the last position
+}
+
+// Sets r to be p(s)
+void perms_composition(const int *p, const int *s, int *r)
+{
+	for (int i = 0; i < N; i++)
+	{
+		r[i] = p[s[i] - 1];
+	}
+}
+
+// Finds the minimum inversion of p*(c^i)*s
+unsigned int find_min_inversion(int *p, int *s)
+{
+	unsigned int min_inv = UINT_MAX;
+	for (int i = 0; i < N; i++)
+	{
+		int comp[N];
+		perms_composition(p, s, comp);
+		unsigned int inv = get_inversion(comp);
+		if (inv < min_inv)
+			min_inv = inv;
+
+		shift_left(s); // Next shift. (Finally will cancel out).
+	}
+
+	return min_inv;
+}
+
+void calculate_values_iterator(int *perm, int level)
+{
+	static int phase = 1;
+	static int *phase1_perm;
+
+	if (phase == 1)
+	{
+		// We only have one perm, we need to go over all perms with this perm.
+		phase = 2;
+		phase1_perm = perm;
+		iterate_permutations(&calculate_values_iterator);
+		phase = 1;
+	}
+	else
+	{
+		// We have two perms!
+		unsigned int min_inv = find_min_inversion(phase1_perm, perm);
+		if (min_inv > max_inversion)
+			max_inversion = min_inv;
+
+		if (PRINT_PERMS)
+		{
+			printf("Minimum inversion for ");
+			print_perm_l(phase1_perm, N);
+			printf(" and ");
+			print_perm_l(perm, N);
+			printf(" is: %d\n", min_inv);
+		}
+	}
+}
+
+void calculate_values()
+{
+	// Iterate over all pairs of permutations.
+	iterate_permutations(&calculate_values_iterator);
+	printf("Max len: %d\n", max_inversion);
+}
+
 int main()
 {
 	init_data();
 	get_data();
-//	calculate_values();
+	calculate_values();
 	print_polynom();
 	cleanup();
 
