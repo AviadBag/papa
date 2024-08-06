@@ -100,12 +100,8 @@ void print_found_tree()
 
 void iterate_permutations_recursive(tree_node* tree, void (* callback)(int* perm, int level), int* perm_so_far, int depth)
 {
-	if (tree->is_leaf)
-	{
-		if (depth == N) callback(perm_so_far, tree->level);
-		return; // We can go no further
-	}
-
+	if (tree->is_leaf && depth == N)
+ 		callback(perm_so_far, tree->level);
 	else
 	{
 		for (int i = 0; i < N; i++)
