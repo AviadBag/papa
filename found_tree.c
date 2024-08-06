@@ -98,10 +98,10 @@ void print_found_tree()
 	print_found_tree_recursive(&found_tree, 0, -1);
 }
 
-void iterate_permutations_recursive(tree_node* tree, void (* callback)(int* perm, int level), int* perm_so_far, int depth)
+void iterate_permutations_recursive(tree_node* tree, iterator_callback callback, void* extra_data, int* perm_so_far, int depth)
 {
 	if (tree->is_leaf && depth == N)
- 		callback(perm_so_far, tree->level);
+ 		callback(perm_so_far, tree->level, extra_data);
 	else
 	{
 		for (int i = 0; i < N; i++)
@@ -109,15 +109,15 @@ void iterate_permutations_recursive(tree_node* tree, void (* callback)(int* perm
 			if (!tree->children[i]) continue;
 
 			perm_so_far[depth] = i+1;
-			iterate_permutations_recursive(tree->children[i], callback, perm_so_far, depth+1);
+			iterate_permutations_recursive(tree->children[i], callback, extra_data, perm_so_far, depth+1);
 		}
 	}
 }
 
-void iterate_permutations(void (* callback)(int* perm, int level))
+void iterate_permutations(iterator_callback callback, void* extra_data)
 {
 	int perm[N];
-	iterate_permutations_recursive(&found_tree, callback, perm, 0);
+	iterate_permutations_recursive(&found_tree, callback, extra_data, perm, 0);
 }
 
 // Helper function to free the tree recursively

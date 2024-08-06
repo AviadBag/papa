@@ -159,13 +159,13 @@ unsigned long long find_children_for_perm(int *perm)
 }
 
 // Gets children for this prem only if it's level is right. This callback will be called with every perm we have.
-void find_children_for_current_level(int *perm, int level)
+void find_children_for_current_level(int *perm, int level, __attribute__((unused)) void* extra_data)
 {
 	if (level == current_level)
 		find_children_for_perm(perm);
 }
 
-void iterator_generate_polynom(int *perm, int level)
+void iterator_generate_polynom(__attribute__((unused)) int *perm, int level, __attribute__((unused)) void* extra_data)
 {
 	polynom[level]++;
 }
@@ -197,7 +197,7 @@ void get_data()
 	{
 		if (PRINT_PERMS)
 			printf("\nLevel %d:\n| ", current_level + 1);
-		iterate_permutations(&find_children_for_current_level);
+		iterate_permutations(&find_children_for_current_level, 0);
 		if (found == last_found) break; // We found nothing
 		last_found = found;
 		current_level++;
@@ -214,7 +214,7 @@ void print_polynom()
 	polynom = calloc(current_level + 1, sizeof(unsigned long long));
 	ALLOC_VALIDATE(polynom)
 
-	iterate_permutations(iterator_generate_polynom);
+	iterate_permutations(iterator_generate_polynom, 0);
 
 	// Print polynom
 	for (int i = 0; i <= current_level; i++)
@@ -287,7 +287,7 @@ unsigned int find_min_inversion(int *p, int *s)
 	return min_inv;
 }
 
-void calculate_values_iterator(int *perm, int level)
+void calculate_values_iterator(int *perm, __attribute__((unused)) int level, __attribute__((unused)) void* extra_data)
 {
 	static int phase = 1;
 	static int *phase1_perm;
@@ -297,7 +297,7 @@ void calculate_values_iterator(int *perm, int level)
 		// We only have one perm, we need to go over all perms with this perm.
 		phase = 2;
 		phase1_perm = perm;
-		iterate_permutations(&calculate_values_iterator);
+		iterate_permutations(&calculate_values_iterator, 0);
 		phase = 1;
 	}
 	else
@@ -321,7 +321,7 @@ void calculate_values_iterator(int *perm, int level)
 void calculate_values()
 {
 	// Iterate over all pairs of permutations.
-	iterate_permutations(&calculate_values_iterator);
+	iterate_permutations(&calculate_values_iterator, 0);
 	printf("Max len: %d\n", max_inversion);
 }
 
