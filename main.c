@@ -260,6 +260,20 @@ void shift_left(int *perm)
 	perm[N - 1] = first; // Move the first element to the last position
 }
 
+// Inverts perm, returns it as a new permutation.
+int* convert(int* perm)
+{
+	int* new_perm = allocate_perm();
+
+	for (int i = 1; i <= N; i++)
+	{
+		int index = index_of(perm, i);
+		new_perm[i-1] = index + 1;
+	}
+
+	return new_perm;
+}
+
 // Sets r to be p(s)
 void perms_composition(const int *p, const int *s, int *r)
 {
@@ -275,13 +289,16 @@ unsigned int find_min_inversion(int *p, int *s)
 	unsigned int min_inv = UINT_MAX;
 	for (int i = 0; i < N; i++)
 	{
+		shift_left(p); // Next shift. (Finally will cancel out).
+
 		int comp[N];
-		perms_composition(p, s, comp);
+		int* converted = convert(s);
+		perms_composition(p, converted, comp);
+		free(converted);
+
 		unsigned int inv = get_inversion(comp);
 		if (inv < min_inv)
 			min_inv = inv;
-
-		shift_left(s); // Next shift. (Finally will cancel out).
 	}
 
 	return min_inv;
