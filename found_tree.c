@@ -18,17 +18,23 @@ void initialize_found_tree()
 	found_tree.is_leaf = false;
 
 	// Initialize children to 0 (null).
-	for (int i = 0; i < N; i++) found_tree.children[i] = 0;
+	for (int i = 0; i < FOUND_TREE_CHILDREN_LEN; i++) found_tree.children[i] = 0;
+}
+
+int get_digit_index(int digit)
+{
+	if (digit == SUBPERM_SEPARATOR) return FOUND_TREE_CHILDREN_LEN-1;
+	return digit-1;
 }
 
 void set_digit(tree_node* tree, tree_node* child, int digit)
 {
-	tree->children[digit-1] = child;
+	tree->children[get_digit_index(digit)] = child;
 }
 
 tree_node* get_digit(tree_node* tree, int digit)
 {
-	return tree->children[digit-1];
+	return tree->children[get_digit_index(digit)];
 }
 
 // <level> is -1 if it shouldn't be a leaf.
@@ -84,7 +90,7 @@ int partition_idx_to_offset(int partition_idx)
 // Populates new_partition with the partition corresponding to the sorted perm.
 void sort_permutation(int *perm,  int* new_partition)
 {
-	int *sorted_perm = calloc(N, sizeof(int));
+	int *sorted_perm = calloc(PERM_MEMORY_SIZE, sizeof(int));
 	ALLOC_VALIDATE(sorted_perm)
 
 	// Every time find the smallest sub-perm and put it in sorted_perm.
@@ -101,10 +107,10 @@ void sort_permutation(int *perm,  int* new_partition)
 		memcpy(ptr, perm + offset, partition[smallest_subperm_partition_idx] * sizeof(int));
 		ptr += subperm_length;
 
-		perm[offset] = N+1; // So it won't be selected again.
+		perm[offset] = PERM_MEMORY_SIZE+1; // So it won't be selected again.
 	}
 
-	memcpy(perm, sorted_perm, N * sizeof(int));
+	memcpy(perm, sorted_perm, PERM_MEMORY_SIZE * sizeof(int));
 	free(sorted_perm);
 }
 
@@ -114,7 +120,7 @@ bool add_permutation(int* perm, int level)
 //	sort_permutation(perm, new_partition);
 
 	tree_node* node = &found_tree; // Start from the root.
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
 	{
 		tree_node* t = get_digit(node, perm[i]);
 		if (t)
@@ -124,8 +130,8 @@ bool add_permutation(int* perm, int level)
 			continue;
 		}
 
-		node = add_permutation_digit(node, perm[i], (i+1 == N) ? level : -1);
-		if (i + 1 == N) return true; // We just added the last digit. It was a new one!
+		node = add_permutation_digit(node, perm[i], (i+1 == PERM_MEMORY_SIZE) ? level : -1);
+		if (i + 1 == PERM_MEMORY_SIZE) return true; // We just added the last digit. It was a new one!
 	}
 
 	return false;
@@ -148,7 +154,7 @@ void print_found_tree_recursive(tree_node* tree, int depth, int my_index) {
 	} else {
 		// Print internal tree and its children
 		printf("%d\n", my_index+1);
-		for (int i = 0; i < N; i++) {
+		for (int i = 0; i < FOUND_TREE_CHILDREN_LEN; i++) {
 			print_found_tree_recursive(tree->children[i], depth + 1, i);
 		}
 	}
@@ -161,11 +167,11 @@ void print_found_tree()
 
 void iterate_permutations_recursive(tree_node* tree, iterator_callback callback, void* extra_data, int* perm_so_far, int depth)
 {
-	if (tree->is_leaf && depth == N)
+	if (tree->is_leaf && depth == PERM_MEMORY_SIZE)
  		callback(perm_so_far, tree->level, extra_data);
 	else
 	{
-		for (int i = 0; i < N; i++)
+		for (int i = 0; i < FOUND_TREE_CHILDREN_LEN; i++)
 		{
 			if (!tree->children[i]) continue;
 
@@ -177,7 +183,7 @@ void iterate_permutations_recursive(tree_node* tree, iterator_callback callback,
 
 void iterate_permutations(iterator_callback callback, void* extra_data)
 {
-	int perm[N];
+	int perm[PERM_MEMORY_SIZE];
 	iterate_permutations_recursive(&found_tree, callback, extra_data, perm, 0);
 }
 
@@ -189,7 +195,7 @@ void free_found_tree_recursive(tree_node* node) {
 
 	// If the node is not a leaf, free its children
 	if (!node->is_leaf) {
-		for (int i = 0; i < N; i++) {
+		for (int i = 0; i < FOUND_TREE_CHILDREN_LEN; i++) {
 			if (node->children[i] != NULL) {
 				free_found_tree_recursive(node->children[i]);
 			}

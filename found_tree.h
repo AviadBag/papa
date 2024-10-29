@@ -3,12 +3,14 @@
 
 #include "main.h"
 
+#define FOUND_TREE_CHILDREN_LEN (N+1)
+
 typedef struct s_tree_node
 {
 	bool is_leaf;
 	union {
 		int level; // Valid if leaf.
-		struct s_tree_node* children[N]; // Valid if not a leaf.
+		struct s_tree_node* children[FOUND_TREE_CHILDREN_LEN]; // Valid if not a leaf.
 	};
 } tree_node;
 

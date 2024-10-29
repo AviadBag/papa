@@ -74,7 +74,6 @@ void print_perm(int* perm)
 		{
 			putchar(')');
 			if (i + 1 != PERM_MEMORY_SIZE) putchar('(');
-			else putchar('\n');
 		}
 		else
 		{
@@ -87,7 +86,7 @@ void print_perm(int* perm)
 // Returns the index of the given number in the permutation. -1 if not found
 int index_of(const int *perm, int what)
 {
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
 		if (perm[i] == what)
 			return i;
 
@@ -97,7 +96,7 @@ int index_of(const int *perm, int what)
 int *duplicate_perm(const int *perm)
 {
 	int *new_perm = allocate_perm();
-	memcpy(new_perm, perm, N * sizeof(int));
+	memcpy(new_perm, perm, PERM_MEMORY_SIZE * sizeof(int));
 	return new_perm;
 }
 
@@ -163,8 +162,10 @@ void rearrange_perm(int *perm)
 unsigned long long find_children_for_perm(int *perm)
 {
 	// For every child, perform the corresponding S operation
-	for (int i = 1; i < N; i++)
+	for (int i = 1; i < PERM_MEMORY_SIZE; i++)
 	{
+		if (perm[i] == SUBPERM_SEPARATOR) continue;
+
 		int new_level = current_level + 1;
 
 		// Get next perm
@@ -213,7 +214,7 @@ void init_data()
 	if (PRINT_PERMS)
 	{
 		printf("Level 0:\n| ");
-		print_perm_with_division(initial_perm);
+		print_perm(initial_perm);
 		printf(" |");
 	}
 
@@ -265,124 +266,120 @@ void cleanup()
 	free_found_tree();
 }
 
-unsigned int get_inversion(const int *perm)
-{
-	unsigned int inv = 0;
-	for (int i = 0; i < N - 1; i++)
-	{
-		for (int j = i + 1; j < N; j++)
-		{
-			if (perm[i] > perm[j])
-				inv++;
-		}
-	}
-
-	return inv;
-}
-
-// Shifts the GIVEN PERM left.
-void shift_left(int *perm)
-{
-	int first = perm[0]; // Store the first element
-	for (int i = 0; i < N - 1; i++)
-	{
-		perm[i] = perm[i + 1]; // Shift each element one position to the left
-	}
-	perm[N - 1] = first; // Move the first element to the last position
-}
-
-// Inverts perm, returns it as a new permutation.
-int* convert(int* perm)
-{
-	int* new_perm = allocate_perm();
-
-	for (int i = 1; i <= N; i++)
-	{
-		int index = index_of(perm, i);
-		new_perm[i-1] = index + 1;
-	}
-
-	return new_perm;
-}
-
-// Sets r to be p(s)
-void perms_composition(const int *p, const int *s, int *r)
-{
-	for (int i = 0; i < N; i++)
-	{
-		r[i] = p[s[i] - 1];
-	}
-}
-
-// Finds the minimum inversion of p*(c^i)*s
-unsigned int find_min_inversion(int *p, int *s)
-{
-	unsigned int min_inv = UINT_MAX;
-	for (int i = 0; i < N; i++)
-	{
-		shift_left(p); // Next shift. (Finally will cancel out).
-
-		int comp[N];
-		int* converted = convert(s);
-		perms_composition(p, converted, comp);
-		free(converted);
-
-		unsigned int inv = get_inversion(comp);
-		if (inv < min_inv)
-			min_inv = inv;
-	}
-
-	return min_inv;
-}
-
-void calculate_values_2st_iterator(int *perm, __attribute__((unused)) int level, void* extra_data)
-{
-	int* first_perm = (int*) extra_data;
-
-	unsigned int min_inv = find_min_inversion(first_perm, perm);
-	if (min_inv > max_inversion)
-		max_inversion = min_inv;
-
-	if (PRINT_PERMS)
-	{
-		printf("Minimum inversion for ");
-		print_perm_l(first_perm, N);
-		printf(" and ");
-		print_perm_l(perm, N);
-		printf(" is: %d\n", min_inv);
-	}
-}
-
-void calculate_values_1st_iterator(int *perm, __attribute__((unused)) int level, __attribute__((unused)) void* extra_data)
-{
-	// Iterate over all permutations with this permutation
-	iterate_permutations(&calculate_values_2st_iterator, (void*) perm);
-}
-
-void calculate_values()
-{
-	// Iterate over all pairs of permutations.
-	iterate_permutations(&calculate_values_1st_iterator, 0);
-	printf("Max len: %d\n", max_inversion);
-}
+//unsigned int get_inversion(const int *perm)
+//{
+//	unsigned int inv = 0;
+//	for (int i = 0; i < N - 1; i++)
+//	{
+//		for (int j = i + 1; j < N; j++)
+//		{
+//			if (perm[i] > perm[j])
+//				inv++;
+//		}
+//	}
+//
+//	return inv;
+//}
+//
+//// Shifts the GIVEN PERM left.
+//void shift_left(int *perm)
+//{
+//	int first = perm[0]; // Store the first element
+//	for (int i = 0; i < N - 1; i++)
+//	{
+//		perm[i] = perm[i + 1]; // Shift each element one position to the left
+//	}
+//	perm[N - 1] = first; // Move the first element to the last position
+//}
+//
+//// Inverts perm, returns it as a new permutation.
+//int* convert(int* perm)
+//{
+//	int* new_perm = allocate_perm();
+//
+//	for (int i = 1; i <= N; i++)
+//	{
+//		int index = index_of(perm, i);
+//		new_perm[i-1] = index + 1;
+//	}
+//
+//	return new_perm;
+//}
+//
+//// Sets r to be p(s)
+//void perms_composition(const int *p, const int *s, int *r)
+//{
+//	for (int i = 0; i < N; i++)
+//	{
+//		r[i] = p[s[i] - 1];
+//	}
+//}
+//
+//// Finds the minimum inversion of p*(c^i)*s
+//unsigned int find_min_inversion(int *p, int *s)
+//{
+//	unsigned int min_inv = UINT_MAX;
+//	for (int i = 0; i < N; i++)
+//	{
+//		shift_left(p); // Next shift. (Finally will cancel out).
+//
+//		int comp[N];
+//		int* converted = convert(s);
+//		perms_composition(p, converted, comp);
+//		free(converted);
+//
+//		unsigned int inv = get_inversion(comp);
+//		if (inv < min_inv)
+//			min_inv = inv;
+//	}
+//
+//	return min_inv;
+//}
+//
+//void calculate_values_2st_iterator(int *perm, __attribute__((unused)) int level, void* extra_data)
+//{
+//	int* first_perm = (int*) extra_data;
+//
+//	unsigned int min_inv = find_min_inversion(first_perm, perm);
+//	if (min_inv > max_inversion)
+//		max_inversion = min_inv;
+//
+//	if (PRINT_PERMS)
+//	{
+//		printf("Minimum inversion for ");
+//		print_perm_l(first_perm, N);
+//		printf(" and ");
+//		print_perm_l(perm, N);
+//		printf(" is: %d\n", min_inv);
+//	}
+//}
+//
+//void calculate_values_1st_iterator(int *perm, __attribute__((unused)) int level, __attribute__((unused)) void* extra_data)
+//{
+//	// Iterate over all permutations with this permutation
+//	iterate_permutations(&calculate_values_2st_iterator, (void*) perm);
+//}
+//
+//void calculate_values()
+//{
+//	// Iterate over all pairs of permutations.
+//	iterate_permutations(&calculate_values_1st_iterator, 0);
+//	printf("Max len: %d\n", max_inversion);
+//}
 
 int main()
 {
-//	clock_t start = clock();
-//
-//	init_data();
-//	get_data();
-////	calculate_values();
-//	print_polynom();
-//	cleanup();
-//
-//	clock_t stop = clock();
-//	double elapsed = (double) (stop - start) / CLOCKS_PER_SEC;
-//	printf("\nTime elapsed: %.5fs\n", elapsed);
+	clock_t start = clock();
 
-	int* perm = get_initial_perm();
-	print_perm(perm);
-	free(perm);
+	init_data();
+	get_data();
+//	calculate_values();
+	print_polynom();
+	cleanup();
+
+	clock_t stop = clock();
+	double elapsed = (double) (stop - start) / CLOCKS_PER_SEC;
+	printf("\nTime elapsed: %.5fs\n", elapsed);
 
 	return 0;
 }
