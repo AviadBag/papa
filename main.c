@@ -43,10 +43,10 @@ void print_perm_l(int *perm, int len)
 
 void print_perm_with_division(int* perm)
 {
-	const int kS[] = kS_DEF;
-	for (int i = 0; i < NUMBER_OF_kS; i++)
+	const int partition[] = PARTITION;
+	for (int i = 0; i < PARTITION_SIZE; i++)
 	{
-		int k = kS[i];
+		int k = partition[i];
 		print_perm_l(perm, k);
 		perm += k;
 	}
@@ -120,10 +120,10 @@ void rearrange_perm_l(int *perm, int len)
 // Rearranges the given perm, so the first number is the lowest one. (Keeps the permutation intact).
 void rearrange_perm(int *perm)
 {
-	const int kS[] = kS_DEF;
-	for (int i = 0; i < NUMBER_OF_kS; i++)
+	const int partition[] = PARTITION;
+	for (int i = 0; i < PARTITION_SIZE; i++)
 	{
-		int k = kS[i];
+		int k = partition[i];
 		rearrange_perm_l(perm, k);
 		perm += k;
 	}
@@ -341,7 +341,7 @@ int main()
 
 	init_data();
 	get_data();
-	calculate_values();
+//	calculate_values();
 	print_polynom();
 	cleanup();
 

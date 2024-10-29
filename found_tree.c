@@ -3,7 +3,7 @@
 #include "found_tree.h"
 
 tree_node found_tree;
-const int kS[] = kS_DEF;
+const int partition[] = PARTITION;
 
 tree_node* allocate_tree_node()
 {
@@ -52,13 +52,13 @@ tree_node* add_permutation_digit(tree_node* tree, int digit, int level)
 	return node;
 }
 
-// Finds the subperm whose first digit is the smallest. Returns the index in kS.
+// Finds the subperm whose first digit is the smallest. Returns the index in partition.
 int get_smallest_subperm(const int* perm)
 {
 	int smallestIdxK = 0;
 	int smallest = perm[0];
-	int idxPerm = kS[0];
-	for (int i = 1; i < NUMBER_OF_kS; i++)
+	int idxPerm = partition[0];
+	for (int i = 1; i < PARTITION_SIZE; i++)
 	{
 		if (perm[idxPerm] < smallest)
 		{
@@ -66,39 +66,39 @@ int get_smallest_subperm(const int* perm)
 			smallest = perm[idxPerm];
 		}
 
-		idxPerm += kS[i];
+		idxPerm += partition[i];
 	}
 
 	return smallestIdxK;
 }
 
-int kS_idx_to_offset(int kS_idx)
+int partition_idx_to_offset(int partition_idx)
 {
 	int offset = 0;
-	for (int i = 0; i < kS_idx; i++)
-		offset += kS[i];
+	for (int i = 0; i < partition_idx; i++)
+		offset += partition[i];
 	return offset;
 }
 
 // Sorts the permutation according to first digits of its sub-permutations.
-// Populates new_kS with the kS corresponding to the sorted perm.
-void sort_permutation(int *perm,  int* new_kS)
+// Populates new_partition with the partition corresponding to the sorted perm.
+void sort_permutation(int *perm,  int* new_partition)
 {
 	int *sorted_perm = calloc(N, sizeof(int));
 	ALLOC_VALIDATE(sorted_perm)
 
 	// Every time find the smallest sub-perm and put it in sorted_perm.
 	int* ptr = sorted_perm;
-	for (int i = 0; i < NUMBER_OF_kS; i++)
+	for (int i = 0; i < PARTITION_SIZE; i++)
 	{
-		int smallest_subperm_kS_idx = get_smallest_subperm(perm);
-		int subperm_length = kS[smallest_subperm_kS_idx];
-		int offset = kS_idx_to_offset(smallest_subperm_kS_idx);
+		int smallest_subperm_partition_idx = get_smallest_subperm(perm);
+		int subperm_length = partition[smallest_subperm_partition_idx];
+		int offset = partition_idx_to_offset(smallest_subperm_partition_idx);
 
-		new_kS[i] = subperm_length;
+		new_partition[i] = subperm_length;
 
 		// Copy the subperm to the sorted_perm.
-		memcpy(ptr, perm + offset, kS[smallest_subperm_kS_idx] * sizeof(int));
+		memcpy(ptr, perm + offset, partition[smallest_subperm_partition_idx] * sizeof(int));
 		ptr += subperm_length;
 
 		perm[offset] = N+1; // So it won't be selected again.
@@ -110,8 +110,8 @@ void sort_permutation(int *perm,  int* new_kS)
 
 bool add_permutation(int* perm, int level)
 {
-	int new_kS[NUMBER_OF_kS];
-	sort_permutation(perm, new_kS);
+//	int new_partition[PARTITION_SIZE];
+//	sort_permutation(perm, new_partition);
 
 	tree_node* node = &found_tree; // Start from the root.
 	for (int i = 0; i < N; i++)

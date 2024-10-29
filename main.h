@@ -7,12 +7,12 @@ typedef int bool;
 #define true 1
 #define false 0
 
-#define N 8
+#define N 7
 
-#define NUMBER_OF_kS 1
-#define kS_DEF {N}
+#define PARTITION_SIZE 3
+#define PARTITION {2, 3, 2}
 
-#define PRINT_PERMS false
+#define PRINT_PERMS true
 
 #define ALLOC_VALIDATE(p) if (!p) { printf("Not enough memory!"); exit(1); }
 
