@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <string.h>
 #include "found_tree.h"
 
 tree_node found_tree;
+const int kS[] = kS_DEF;
 
 tree_node* allocate_tree_node()
 {
@@ -50,8 +52,67 @@ tree_node* add_permutation_digit(tree_node* tree, int digit, int level)
 	return node;
 }
 
+// Finds the subperm whose first digit is the smallest. Returns the index in kS.
+int get_smallest_subperm(const int* perm)
+{
+	int smallestIdxK = 0;
+	int smallest = perm[0];
+	int idxPerm = kS[0];
+	for (int i = 1; i < NUMBER_OF_kS; i++)
+	{
+		if (perm[idxPerm] < smallest)
+		{
+			smallestIdxK = i;
+			smallest = perm[idxPerm];
+		}
+
+		idxPerm += kS[i];
+	}
+
+	return smallestIdxK;
+}
+
+int kS_idx_to_offset(int kS_idx)
+{
+	int offset = 0;
+	for (int i = 0; i < kS_idx; i++)
+		offset += kS[i];
+	return offset;
+}
+
+// Sorts the permutation according to first digits of its sub-permutations.
+// Populates new_kS with the kS corresponding to the sorted perm.
+void sort_permutation(int *perm,  int* new_kS)
+{
+	int *sorted_perm = calloc(N, sizeof(int));
+	ALLOC_VALIDATE(sorted_perm)
+
+	// Every time find the smallest sub-perm and put it in sorted_perm.
+	int* ptr = sorted_perm;
+	for (int i = 0; i < NUMBER_OF_kS; i++)
+	{
+		int smallest_subperm_kS_idx = get_smallest_subperm(perm);
+		int subperm_length = kS[smallest_subperm_kS_idx];
+		int offset = kS_idx_to_offset(smallest_subperm_kS_idx);
+
+		new_kS[i] = subperm_length;
+
+		// Copy the subperm to the sorted_perm.
+		memcpy(ptr, perm + offset, kS[smallest_subperm_kS_idx] * sizeof(int));
+		ptr += subperm_length;
+
+		perm[offset] = N+1; // So it won't be selected again.
+	}
+
+	memcpy(perm, sorted_perm, N * sizeof(int));
+	free(sorted_perm);
+}
+
 bool add_permutation(int* perm, int level)
 {
+	int new_kS[NUMBER_OF_kS];
+	sort_permutation(perm, new_kS);
+
 	tree_node* node = &found_tree; // Start from the root.
 	for (int i = 0; i < N; i++)
 	{
