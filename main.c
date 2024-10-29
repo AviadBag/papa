@@ -12,10 +12,12 @@ unsigned long long found = 0;
 unsigned long long *polynom;
 unsigned int max_inversion = 0;
 
+const int partition[] = PARTITION;
+
 // Returns a new, dynamically allocated, permutation. Exits program on error.
 int *allocate_perm()
 {
-	int *perm = calloc(N, sizeof(int));
+	int *perm = calloc(PERM_MEMORY_SIZE, sizeof(int));
 	ALLOC_VALIDATE(perm)
 
 	return perm;
@@ -24,8 +26,20 @@ int *allocate_perm()
 int *get_initial_perm()
 {
 	int *perm = allocate_perm();
-	for (int i = 0; i < N; i++)
-		perm[i] = i + 1;
+	int k = 0, j = 0, l = 1;
+	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
+	{
+		if (k++ == partition[j])
+		{
+			k = 0;
+			j++;
+			perm[i] = SUBPERM_SEPARATOR;
+		}
+		else
+		{
+			perm[i] = l++;
+		}
+	}
 	return perm;
 }
 
@@ -43,12 +57,30 @@ void print_perm_l(int *perm, int len)
 
 void print_perm_with_division(int* perm)
 {
-	const int partition[] = PARTITION;
 	for (int i = 0; i < PARTITION_SIZE; i++)
 	{
 		int k = partition[i];
 		print_perm_l(perm, k);
 		perm += k;
+	}
+}
+
+void print_perm(int* perm)
+{
+	putchar('(');
+	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
+	{
+		if (perm[i] == SUBPERM_SEPARATOR)
+		{
+			putchar(')');
+			if (i + 1 != PERM_MEMORY_SIZE) putchar('(');
+			else putchar('\n');
+		}
+		else
+		{
+			printf("%d", perm[i]);
+			if (perm[i+1] != SUBPERM_SEPARATOR) printf(", ");
+		}
 	}
 }
 
@@ -120,7 +152,6 @@ void rearrange_perm_l(int *perm, int len)
 // Rearranges the given perm, so the first number is the lowest one. (Keeps the permutation intact).
 void rearrange_perm(int *perm)
 {
-	const int partition[] = PARTITION;
 	for (int i = 0; i < PARTITION_SIZE; i++)
 	{
 		int k = partition[i];
@@ -337,17 +368,21 @@ void calculate_values()
 
 int main()
 {
-	clock_t start = clock();
+//	clock_t start = clock();
+//
+//	init_data();
+//	get_data();
+////	calculate_values();
+//	print_polynom();
+//	cleanup();
+//
+//	clock_t stop = clock();
+//	double elapsed = (double) (stop - start) / CLOCKS_PER_SEC;
+//	printf("\nTime elapsed: %.5fs\n", elapsed);
 
-	init_data();
-	get_data();
-//	calculate_values();
-	print_polynom();
-	cleanup();
-
-	clock_t stop = clock();
-	double elapsed = (double) (stop - start) / CLOCKS_PER_SEC;
-	printf("\nTime elapsed: %.5fs\n", elapsed);
+	int* perm = get_initial_perm();
+	print_perm(perm);
+	free(perm);
 
 	return 0;
 }

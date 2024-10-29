@@ -3,7 +3,7 @@
 #include "found_tree.h"
 
 tree_node found_tree;
-const int partition[] = PARTITION;
+extern const int partition[];
 
 tree_node* allocate_tree_node()
 {
