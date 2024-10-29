@@ -43,28 +43,6 @@ int *get_initial_perm()
 	return perm;
 }
 
-void print_perm_l(int *perm, int len)
-{
-	printf("(");
-	for (int i = 0; i < len; i++)
-	{
-		if (i + 1 == len)
-			printf("%d)", perm[i]);
-		else
-			printf("%d, ", perm[i]);
-	}
-}
-
-void print_perm_with_division(int* perm)
-{
-	for (int i = 0; i < PARTITION_SIZE; i++)
-	{
-		int k = partition[i];
-		print_perm_l(perm, k);
-		perm += k;
-	}
-}
-
 void print_perm(int* perm)
 {
 	putchar('(');
@@ -155,17 +133,15 @@ void rearrange_perm(int *perm)
 	{
 		int k = partition[i];
 		rearrange_perm_l(perm, k);
-		perm += k;
+		perm += k + 1; // Skip the separator
 	}
 }
 
 unsigned long long find_children_for_perm(int *perm)
 {
 	// For every child, perform the corresponding S operation
-	for (int i = 1; i < PERM_MEMORY_SIZE; i++)
+	for (int i = 1; i < N; i++)
 	{
-		if (perm[i] == SUBPERM_SEPARATOR) continue;
-
 		int new_level = current_level + 1;
 
 		// Get next perm
@@ -180,7 +156,7 @@ unsigned long long find_children_for_perm(int *perm)
 			if (PRINT_PERMS)
 			{
 				printf("S%d -> ", i);
-				print_perm_with_division(si_perm);
+				print_perm(si_perm);
 				printf(" | ");
 			}
 		}

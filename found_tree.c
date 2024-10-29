@@ -21,20 +21,26 @@ void initialize_found_tree()
 	for (int i = 0; i < FOUND_TREE_CHILDREN_LEN; i++) found_tree.children[i] = 0;
 }
 
-int get_digit_index(int digit)
+int digit_to_index(int digit)
 {
 	if (digit == SUBPERM_SEPARATOR) return FOUND_TREE_CHILDREN_LEN-1;
 	return digit-1;
 }
 
+int index_to_digit(int index)
+{
+	if (index == FOUND_TREE_CHILDREN_LEN-1) return SUBPERM_SEPARATOR;
+	return index+1;
+}
+
 void set_digit(tree_node* tree, tree_node* child, int digit)
 {
-	tree->children[get_digit_index(digit)] = child;
+	tree->children[digit_to_index(digit)] = child;
 }
 
 tree_node* get_digit(tree_node* tree, int digit)
 {
-	return tree->children[get_digit_index(digit)];
+	return tree->children[digit_to_index(digit)];
 }
 
 // <level> is -1 if it shouldn't be a leaf.
@@ -175,7 +181,7 @@ void iterate_permutations_recursive(tree_node* tree, iterator_callback callback,
 		{
 			if (!tree->children[i]) continue;
 
-			perm_so_far[depth] = i+1;
+			perm_so_far[depth] = index_to_digit(i);
 			iterate_permutations_recursive(tree->children[i], callback, extra_data, perm_so_far, depth+1);
 		}
 	}
