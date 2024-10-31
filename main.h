@@ -14,10 +14,13 @@ typedef int bool;
 
 #define SUBPERM_SEPARATOR (-1)
 // Size of the array representing a permutation. There will be an SUBPERM_SEPARATOR space after every subperm.
-#define PERM_MEMORY_SIZE (N + PARTITION_SIZE)
+#define PERM_MEMORY_LEN (N + PARTITION_SIZE)
 
 #define PRINT_PERMS true
 
 #define ALLOC_VALIDATE(p) if (!p) { printf("Not enough memory!"); exit(1); }
+
+int *allocate_perm();
+void print_perm(int* perm);
 
 #endif //_MAIN_H_

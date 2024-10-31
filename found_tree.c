@@ -64,24 +64,27 @@ tree_node* add_permutation_digit(tree_node* tree, int digit, int level)
 	return node;
 }
 
-// Finds the subperm whose first digit is the smallest. Returns the index in partition.
+// Finds the subperm whose first digit is the smallest. Returns the index of that digit.
 int get_smallest_subperm(const int* perm)
 {
-	int smallestIdxK = 0;
 	int smallest = perm[0];
-	int idxPerm = partition[0];
-	for (int i = 1; i < PARTITION_SIZE; i++)
+	int smallestIdx = 0;
+	for (int i = 1; i < PERM_MEMORY_LEN; i++)
 	{
-		if (perm[idxPerm] < smallest)
+		if (perm[i] == SUBPERM_SEPARATOR) // The end of a subperm, i+1 is the beginning of a new subperm.
 		{
-			smallestIdxK = i;
-			smallest = perm[idxPerm];
+			if (i+1 < PERM_MEMORY_LEN) // Not the end of the last subperm
+			{
+				if (perm[i+1] < smallest)
+				{
+					smallest = perm[i+1];
+					smallestIdx = i+1;
+				}
+			}
 		}
-
-		idxPerm += partition[i];
 	}
 
-	return smallestIdxK;
+	return smallestIdx;
 }
 
 int partition_idx_to_offset(int partition_idx)
@@ -92,41 +95,50 @@ int partition_idx_to_offset(int partition_idx)
 	return offset;
 }
 
-// Sorts the permutation according to first digits of its sub-permutations.
-// Populates new_partition with the partition corresponding to the sorted perm.
-void sort_permutation(int *perm,  int* new_partition)
+// Copy from src to dst until <what> is reached. (Including <what>). Returns how many bites were copied.
+int copy_until(int* dst, int* src, int what)
 {
-	int *sorted_perm = calloc(PERM_MEMORY_SIZE, sizeof(int));
-	ALLOC_VALIDATE(sorted_perm)
+	int count = 0;
+	while (true)
+	{
+		*dst = *src;
+		count++;
+		if (*dst == what) break;
+		dst++; src++;
+	}
+	return count;
+}
+
+// Sorts the permutation according to first digits of its sub-permutations.
+void sort_permutation(int *perm)
+{
+	int *sorted_perm = allocate_perm();
+	memset(sorted_perm, SUBPERM_SEPARATOR, PERM_MEMORY_LEN);
 
 	// Every time find the smallest sub-perm and put it in sorted_perm.
 	int* ptr = sorted_perm;
 	for (int i = 0; i < PARTITION_SIZE; i++)
 	{
-		int smallest_subperm_partition_idx = get_smallest_subperm(perm);
-		int subperm_length = partition[smallest_subperm_partition_idx];
-		int offset = partition_idx_to_offset(smallest_subperm_partition_idx);
-
-		new_partition[i] = subperm_length;
-
-		// Copy the subperm to the sorted_perm.
-		memcpy(ptr, perm + offset, partition[smallest_subperm_partition_idx] * sizeof(int));
-		ptr += subperm_length;
-
-		perm[offset] = PERM_MEMORY_SIZE+1; // So it won't be selected again.
+		int smallest_subperm_idx = get_smallest_subperm(perm);
+		ptr += copy_until(ptr, perm + smallest_subperm_idx, SUBPERM_SEPARATOR);
+		perm[smallest_subperm_idx] = N+1; // So it won't trigger again
 	}
 
-	memcpy(perm, sorted_perm, PERM_MEMORY_SIZE * sizeof(int));
+	memcpy(perm, sorted_perm, PERM_MEMORY_LEN * sizeof(int));
 	free(sorted_perm);
 }
 
-bool add_permutation(int* perm, int level)
+bool add_permutation(const int* perm, int level)
 {
-//	int new_partition[PARTITION_SIZE];
-//	sort_permutation(perm, new_partition);
+//	printf("\nBefore sort: ");
+//	print_perm(perm);
+	sort_permutation(perm);
+//	printf("\nAfter sort: ");
+//	print_perm(perm);
+//	putchar('\n');
 
 	tree_node* node = &found_tree; // Start from the root.
-	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
+	for (int i = 0; i < PERM_MEMORY_LEN; i++)
 	{
 		tree_node* t = get_digit(node, perm[i]);
 		if (t)
@@ -136,8 +148,8 @@ bool add_permutation(int* perm, int level)
 			continue;
 		}
 
-		node = add_permutation_digit(node, perm[i], (i+1 == PERM_MEMORY_SIZE) ? level : -1);
-		if (i + 1 == PERM_MEMORY_SIZE) return true; // We just added the last digit. It was a new one!
+		node = add_permutation_digit(node, perm[i], (i+1 == PERM_MEMORY_LEN) ? level : -1);
+		if (i + 1 == PERM_MEMORY_LEN) return true; // We just added the last digit. It was a new one!
 	}
 
 	return false;
@@ -173,7 +185,7 @@ void print_found_tree()
 
 void iterate_permutations_recursive(tree_node* tree, iterator_callback callback, void* extra_data, int* perm_so_far, int depth)
 {
-	if (tree->is_leaf && depth == PERM_MEMORY_SIZE)
+	if (tree->is_leaf && depth == PERM_MEMORY_LEN)
  		callback(perm_so_far, tree->level, extra_data);
 	else
 	{
@@ -189,7 +201,7 @@ void iterate_permutations_recursive(tree_node* tree, iterator_callback callback,
 
 void iterate_permutations(iterator_callback callback, void* extra_data)
 {
-	int perm[PERM_MEMORY_SIZE];
+	int perm[PERM_MEMORY_LEN];
 	iterate_permutations_recursive(&found_tree, callback, extra_data, perm, 0);
 }
 

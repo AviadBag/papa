@@ -17,7 +17,7 @@ const int partition[] = PARTITION;
 // Returns a new, dynamically allocated, permutation. Exits program on error.
 int *allocate_perm()
 {
-	int *perm = calloc(PERM_MEMORY_SIZE, sizeof(int));
+	int *perm = calloc(PERM_MEMORY_LEN, sizeof(int));
 	ALLOC_VALIDATE(perm)
 
 	return perm;
@@ -27,7 +27,7 @@ int *get_initial_perm()
 {
 	int *perm = allocate_perm();
 	int k = 0, j = 0, l = 1;
-	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
+	for (int i = 0; i < PERM_MEMORY_LEN; i++)
 	{
 		if (k++ == partition[j])
 		{
@@ -46,12 +46,12 @@ int *get_initial_perm()
 void print_perm(int* perm)
 {
 	putchar('(');
-	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
+	for (int i = 0; i < PERM_MEMORY_LEN; i++)
 	{
 		if (perm[i] == SUBPERM_SEPARATOR)
 		{
 			putchar(')');
-			if (i + 1 != PERM_MEMORY_SIZE) putchar('(');
+			if (i + 1 != PERM_MEMORY_LEN) putchar('(');
 		}
 		else
 		{
@@ -64,7 +64,7 @@ void print_perm(int* perm)
 // Returns the index of the given number in the permutation. -1 if not found
 int index_of(const int *perm, int what)
 {
-	for (int i = 0; i < PERM_MEMORY_SIZE; i++)
+	for (int i = 0; i < PERM_MEMORY_LEN; i++)
 		if (perm[i] == what)
 			return i;
 
@@ -74,7 +74,7 @@ int index_of(const int *perm, int what)
 int *duplicate_perm(const int *perm)
 {
 	int *new_perm = allocate_perm();
-	memcpy(new_perm, perm, PERM_MEMORY_SIZE * sizeof(int));
+	memcpy(new_perm, perm, PERM_MEMORY_LEN * sizeof(int));
 	return new_perm;
 }
 
@@ -100,6 +100,7 @@ int index_of_smallest(const int *perm, int len)
 	int index = 0;
 	for (int i = 0; i < len; i++)
 	{
+		if (perm[i] == SUBPERM_SEPARATOR) continue; // Should not happen
 		if (perm[i] < perm[index])
 			index = i;
 	}
@@ -107,33 +108,43 @@ int index_of_smallest(const int *perm, int len)
 	return index;
 }
 
-// rearrange_perm(perm) with a given length.
-void rearrange_perm_l(int *perm, int len)
+// Rearranges the subperm so the first number is the lowest one. subperm is a pointer directly to the required subperm in the perm.
+void rearrange_subperm(int* subperm, int subperm_len)
 {
-	int smallest_i = index_of_smallest(perm, len);
+	int smallest_i = index_of_smallest(subperm, subperm_len);
 	if (smallest_i == 0)
 		return; // Already arranged
 
-	int *perm_temp = duplicate_perm(perm);
-	int n = len - smallest_i;
+	// Duplicate the subperm
+	int *subperm_temp = malloc(sizeof(int) * subperm_len);
+	ALLOC_VALIDATE(subperm_temp)
+	memcpy(subperm_temp, subperm, sizeof(int) * subperm_len);
+
+	int n = subperm_len - smallest_i;
 
 	// Move <n> cycles
-	for (int i = 0; i < len; i++)
+	for (int i = 0; i < subperm_len; i++)
 	{
-		perm[(i + n) % len] = perm_temp[i];
+		subperm[(i + n) % subperm_len] = subperm_temp[i];
 	}
 
-	free(perm_temp);
+	free(subperm_temp);
 }
 
-// Rearranges the given perm, so the first number is the lowest one. (Keeps the permutation intact).
+// Rearranges every subperm in the given perm, so the first number is the lowest one. (Keeps the permutation intact).
 void rearrange_perm(int *perm)
 {
-	for (int i = 0; i < PARTITION_SIZE; i++)
+	int subperm_start = 0;
+	int subperm_len = 0;
+	for (int i = 0; i < PERM_MEMORY_LEN; i++)
 	{
-		int k = partition[i];
-		rearrange_perm_l(perm, k);
-		perm += k + 1; // Skip the separator
+		subperm_len++;
+		if (perm[i] == SUBPERM_SEPARATOR)
+		{
+			rearrange_subperm(perm + subperm_start, subperm_len - 1);
+			subperm_start = i + 1;
+			subperm_len = 0;
+		}
 	}
 }
 
